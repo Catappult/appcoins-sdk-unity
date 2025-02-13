@@ -1,3 +1,5 @@
+## [1.0.2] - Update to new version 9+
+    - Fix overall structure
 
 ## [1.0.1] - Update to new version 9+
     - Fix of structure
