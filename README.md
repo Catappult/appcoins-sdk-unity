@@ -14,7 +14,7 @@ Streamline the process of adding Appcoins SDK to your Unity app through importin
 
 ### Step 1 - Import Package
 * Start by opening on the top menu bar the Window > Package Manager
-* In the new window on the top left corner click on the + sign and select Import via git URL and paste the following link: https://github.com/Catappult/appcoins-sdk-unity.git#upm
+* In the new window on the top left corner click on the + sign and select Import via git URL and paste the following link: https://github.com/Catappult/appcoins-sdk-unity.git#v9.0.7
 * Wait to import and compile all files
 * After import it should look like this:
 
