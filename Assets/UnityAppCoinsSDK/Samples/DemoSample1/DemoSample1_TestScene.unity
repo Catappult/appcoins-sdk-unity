@@ -674,7 +674,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   publicKey: INSERT
-  sku: INSERT
+  skuInApp: INSERT
+  skuSubscription: INSERT
   developerPayload: INSERT
 --- !u!1 &1068373620
 GameObject:

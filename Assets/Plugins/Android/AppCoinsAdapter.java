@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 
 import android.content.pm.PackageManager;
 
-
 import com.appcoins.sdk.billing.listeners.*;
 import com.appcoins.sdk.billing.AppcoinsBillingClient;
 import com.appcoins.sdk.billing.PurchasesUpdatedListener;
@@ -19,6 +18,9 @@ import com.appcoins.sdk.billing.SkuDetails;
 import com.appcoins.sdk.billing.SkuDetailsParams;
 import com.appcoins.sdk.billing.helpers.CatapultBillingAppCoinsFactory;
 import com.appcoins.sdk.billing.types.*;
+import com.appcoins.sdk.billing.ReferralDeeplink;
+import com.appcoins.sdk.billing.FeatureType;
+
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,8 +33,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 
 
-
 public class AppCoinsAdapter {
+    private static String unityClassName; // Declare the variable
+
     private static String MSG_INITIAL_RESULT = "InitialResult";
     private static String MSG_CONNECTION_LOST = "ConnectionLost";
     private static String MSG_PRODUCTS_GET_RESULT = "ProductsGetResult";
@@ -41,78 +44,98 @@ public class AppCoinsAdapter {
     private static String MSG_PRODUCTS_CONSUME_RESULT = "ProductsConsumeResult";
     private static String MSG_QUERY_PURCHASES_RESULT = "QueryPurchasesResult";
 
-    private static String LOG_TAG = "[AppCoinsAdapter]";
-
+    private static final String LOG_TAG = "[AppCoinsAdapter]";
     private static Activity activity;
-    private static String unityClassName = "SDKLogic";
-    private static String publicKey;
-    private static boolean needLog = true;
+    private static AppcoinsBillingClient billingClient;
 
-    public static AppcoinsBillingClient cab = null;
-
-    private static boolean isCabInitialized = false;
-
-    private static List<String> skuInappList = new ArrayList<>();
-    private static List<String> skuSubsList = new ArrayList<>();
-
-    private static String _attemptsPrice;
-    private static String _goldDicePrice;
-
-    private static boolean isGoldenDiceSubsActive = false;
-
-
-    public static void queryInappsSkus(List<String> skuInappList) {
-        // Implementation for querying in-app SKUs
-        // Example: Print the list of in-app SKUs
-        for (String sku : skuInappList) {
-            AptoLog("Querying in-app SKU: " + sku);
-        }
-        
-
-        SkuDetailsParams skuDetailsParams = new SkuDetailsParams();
-        skuDetailsParams.setItemType(SkuType.inapp.toString());
-        skuDetailsParams.setMoreItemSkus(skuInappList);
-        cab.querySkuDetailsAsync(skuDetailsParams, skuDetailsResponseListener);
-
+    //startConnection - But adapted to initialize on Unity
+    public static void initialize(String _unityClassName, String _publicKey, String strSku, boolean _needLog){
+        unityClassName = _unityClassName; 
+        activity = UnityPlayer.currentActivity;
+        billingClient = CatapultBillingAppCoinsFactory.BuildAppcoinsBilling(activity, _publicKey, purchasesUpdatedListener);
+        billingClient.startConnection(appCoinsBillingStateListener);
     }
 
-    public static void querySubsSkus(List<String> skuSubsList) {
-        // Implementation for querying subscription SKUs
-        // Example: Print the list of subscription SKUs
-        for (String sku : skuSubsList) {
-            AptoLog("Querying subscription SKU: " + sku);
+    public static void endConnection() {
+        if (billingClient != null) {
+            billingClient.endConnection();
         }
-
-        SkuDetailsParams skuDetailsParams = new SkuDetailsParams();
-        skuDetailsParams.setItemType(SkuType.subs.toString());
-        skuDetailsParams.setMoreItemSkus(skuSubsList);
-        cab.querySkuDetailsAsync(skuDetailsParams, skuDetailsResponseListener);
     }
 
+    public static boolean isReady() {
+        return billingClient != null && billingClient.isReady();
+    }
 
+    public static int isFeatureSupported(FeatureType feature) {
+        return billingClient != null ? billingClient.isFeatureSupported(feature) : ResponseCode.FEATURE_NOT_SUPPORTED.getValue();
+    }
+
+    public static boolean isAppUpdateAvailable() {
+        return billingClient != null && billingClient.isAppUpdateAvailable();
+    }
+
+    public static void launchAppUpdateDialog(Context context) {
+        if (billingClient != null) {
+            billingClient.launchAppUpdateDialog(context);
+        }
+    }
+
+    public static void launchAppUpdateStore(Context context) {
+        if (billingClient != null) {
+            billingClient.launchAppUpdateStore(context);
+        }
+    }
+
+    public static int launchBillingFlow(BillingFlowParams billingFlowParams) {
+        if (billingClient != null) {
+            return billingClient.launchBillingFlow(activity, billingFlowParams);
+        }
+        return ResponseCode.ERROR.getValue();
+    }
+
+    public static void queryPurchases(String skuType) {
+        if (billingClient != null) {
+            billingClient.queryPurchases(skuType);
+        }
+        // Ensure the constructor arguments match the expected types
+        //return new PurchasesResult(ResponseCode.ERROR, new ArrayList<Purchase>());
+    }
+
+    public static void querySkuDetailsAsync(SkuDetailsParams skuDetailsParams, SkuDetailsResponseListener listener) {
+        if (billingClient != null) {
+            billingClient.querySkuDetailsAsync(skuDetailsParams, listener);
+        }
+    }
+
+    public static void consumeAsync(String token, ConsumeResponseListener listener) {
+        if (billingClient != null) {
+            billingClient.consumeAsync(token, listener);
+        }
+    }
+
+    public static ReferralDeeplink getReferralDeeplink() {
+        if (billingClient != null) {
+            return billingClient.getReferralDeeplink();
+        }
+        return new ReferralDeeplink(ResponseCode.ERROR, "", ""); // Pass ResponseCode object and empty strings
+    }
+
+    private static void log(String message) {
+        Log.d(LOG_TAG, message);
+    }
+
+    //LISTENERS SETUP
     private static AppCoinsBillingStateListener appCoinsBillingStateListener = new AppCoinsBillingStateListener() {
         @Override
         public void onBillingSetupFinished(int responseCode) {
-            AptoLog("onBillingSetupFinished responseCode = " + responseCode);
-
-            if(responseCode == ResponseCode.OK.getValue()){
-                QueryPurchases();
-                QuerySubs();
-                queryInappsSkus(skuInappList);
-                querySubsSkus(skuSubsList);
-            }else{
-                _attemptsPrice=null;
-                _goldDicePrice=null;
-            }
-
-
+            
             JSONObject jsonObject = new JSONObject();
             try {
                 jsonObject.put("msg", MSG_INITIAL_RESULT);
                 jsonObject.put("succeed", responseCode == ResponseCode.OK.getValue());
                 jsonObject.put("responseCode", responseCode);
 
-                isCabInitialized = responseCode == ResponseCode.OK.getValue();
+                //isCabInitialized = responseCode == ResponseCode.OK.getValue();
             }
             catch (JSONException e)
             {
@@ -124,14 +147,11 @@ public class AppCoinsAdapter {
 
         @Override
         public void onBillingServiceDisconnected() {
-            AptoLog("onBillingServiceDisconnected");
             JSONObject jsonObject = new JSONObject();
             try {
                 jsonObject.put("msg", MSG_CONNECTION_LOST);
 
-                isCabInitialized = false;
-                _attemptsPrice=null;
-                _goldDicePrice=null;
+                //isCabInitialized = false;
             }
             catch (JSONException e)
             {
@@ -142,12 +162,10 @@ public class AppCoinsAdapter {
         }
     };
 
-
     private static PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
         @Override
         public void onPurchasesUpdated(int responseCode, List<Purchase> purchases)
         {
-            AptoLog("purchasesUpdatedListener " + responseCode);
             JSONObject jsonObject = new JSONObject();
             JSONArray purchasesJson = new JSONArray();
             for(Purchase purchase: purchases)
@@ -173,44 +191,20 @@ public class AppCoinsAdapter {
 
     private static ConsumeResponseListener consumeResponseListener = new ConsumeResponseListener() {
         @Override public void onConsumeResponse(int responseCode, String purchaseToken) {
-            AptoLog("Consumption finished. Purchase: " + purchaseToken + ", result: " + responseCode);
-
-            JSONObject jsonObject = new JSONObject();
-            try {
-                jsonObject.put("msg", MSG_PRODUCTS_CONSUME_RESULT);
-                jsonObject.put("succeed", responseCode == ResponseCode.OK.getValue());
-                jsonObject.put("purchaseToken", purchaseToken);
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-
-            SendUnityMessage(jsonObject);
         }
     };
 
     private static SkuDetailsResponseListener skuDetailsResponseListener = new SkuDetailsResponseListener() {
         @Override
         public void onSkuDetailsResponse(int responseCode, List<SkuDetails> skuDetailsList) {
-            AptoLog("Received skus " + skuDetailsList.size());
             JSONObject jsonObject = new JSONObject();
             if(responseCode == ResponseCode.OK.getValue()) {
-                JSONArray jsonSkus = new JSONArray();
+                 JSONArray jsonSkus = new JSONArray();
                 for (SkuDetails skuDetails : skuDetailsList) {
-                    AptoLog("Processing sku: " + skuDetails.getSku());
                     JSONObject detailJson = GetSkuDetailsJson(skuDetails);
                     jsonSkus.put(detailJson);
-
-                    AptoLog("Details skus " + skuDetails.getSku());
-                    if (skuDetails.getSku().equals("attempts")) {  
-                        AptoLog("Getting price for attempts");                      
-                        _attemptsPrice = skuDetails.getPrice() + ' ' + skuDetails.getFiatPriceCurrencyCode(); // Use getter method
-                    } else if (skuDetails.getSku().equals("golden_dice")) {
-                        AptoLog("Getting price for subs");
-                        _goldDicePrice = skuDetails.getPrice() + ' ' + skuDetails.getFiatPriceCurrencyCode(); // Use getter method
-                    }
                 }
+
                 try {
                     jsonObject.put("msg", MSG_PRODUCTS_GET_RESULT);
                     jsonObject.put("succeed", true);
@@ -233,220 +227,13 @@ public class AppCoinsAdapter {
         }
     };
 
-    public static void Initialize(String _unityClassName, String _publicKey, String strSku, boolean _needLog)
-    {
-        AptoLog("Apto Initialize: " + strSku);
-        skuInappList = new ArrayList<String>(Arrays.asList(strSku.split(";")[0]));
-        skuSubsList = new ArrayList<String>(Arrays.asList(strSku.split(";")[1]));
-        activity = UnityPlayer.currentActivity;
-        //AptoLog("activity = " + activity);
-        unityClassName = _unityClassName;
-        //AptoLog("unityClassName = " + unityClassName);
-        publicKey = _publicKey;
-        //AptoLog("publicKey = " + publicKey);
-        needLog = _needLog;
 
-        cab = CatapultBillingAppCoinsFactory.BuildAppcoinsBilling(
-                activity,
-                publicKey,
-                purchasesUpdatedListener
-        );
-        cab.startConnection(appCoinsBillingStateListener);
-    }
-
-    public static void ProductsStartGet(String strSku)
-    {
-        AptoLog("Products Start Get");
-        List<String> skuList = new ArrayList<String>(Arrays.asList(strSku.split(";")));
-        AptoLog("skuList = " + skuList);
-
-        SkuDetailsParams skuDetailsParams = new SkuDetailsParams();
-        skuDetailsParams.setItemType(SkuType.inapp.toString());
-        skuDetailsParams.setMoreItemSkus(skuList);
-        cab.querySkuDetailsAsync(skuDetailsParams, skuDetailsResponseListener);
-    }
-
-    public static void ProductsStartPay(String sku, String developerPayload)
-    {
-        AptoLog("Launching purchase flow.");
-        // Your sku type, can also be SkuType.subs.toString()
-        String skuType = SkuType.inapp.toString();
-        BillingFlowParams billingFlowParams =
-                new BillingFlowParams(
-                        sku,
-                        skuType,
-                        null, // Deprecated parameter orderReference
-                        developerPayload,
-                        "BDS"
-                );
-
-        final int responseCode = cab.launchBillingFlow(activity, billingFlowParams);
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                
-                JSONObject jsonObject = new JSONObject();
-                try {
-                    jsonObject.put("msg", MSG_LAUNCH_BILLING_RESULT);
-                    jsonObject.put("succeed", responseCode == ResponseCode.OK.getValue());
-                    jsonObject.put("responseCode", responseCode);
-                }
-                catch (JSONException e)
-                {
-                    e.printStackTrace();
-                }
-
-                SendUnityMessage(jsonObject);
-            }
-        });
-    }
-
-
-
-    public static void ProductsStartSubsPay(String sku, String developerPayload)
-    {
-        AptoLog("Launching subs flow.");
-        // Your sku type, can also be SkuType.subs.toString()
-        String skuType = SkuType.subs.toString();
-        BillingFlowParams billingFlowParams =
-                new BillingFlowParams(
-                        sku,
-                        skuType,
-                        null, // Deprecated parameter orderReference
-                        developerPayload,
-                        "BDS"
-                );
-        
-        final int responseCode = cab.launchBillingFlow(activity, billingFlowParams);
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                JSONObject jsonObject = new JSONObject();
-                try {
-                    jsonObject.put("msg", MSG_LAUNCH_BILLING_RESULT);
-                    jsonObject.put("succeed", responseCode == ResponseCode.OK.getValue());
-                    jsonObject.put("responseCode", responseCode);
-                }
-                catch (JSONException e)
-                {
-                    e.printStackTrace();
-                }
-
-                SendUnityMessage(jsonObject);
-            }
-        });
-    }
-
-
-
-    public static void QueryPurchases()
-    {
-        CompletableFuture.runAsync(() -> {
-            PurchasesResult purchasesResult = cab.queryPurchases(SkuType.inapp.toString());
-            List<Purchase> purchases = purchasesResult.getPurchases();
-
-            JSONArray purchasesJson = new JSONArray();
-            for (Purchase purchase : purchases) {
-                JSONObject detailJson = GetPurchaseJson(purchase);
-                purchasesJson.put(detailJson);
-            }
-            
-            JSONObject jsonObject = new JSONObject();
-            try {
-                jsonObject.put("msg", MSG_QUERY_PURCHASES_RESULT);
-                jsonObject.put("succeed", true);
-                jsonObject.put("purchases", purchasesJson);
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-
-            SendUnityMessage(jsonObject);
-        });
-    }
-
-    public static void QuerySubs()
-    {
-        CompletableFuture.runAsync(() -> {
-            PurchasesResult purchasesResult = cab.queryPurchases(SkuType.subs.toString());
-            List<Purchase> purchases = purchasesResult.getPurchases();
-
-            JSONArray purchasesJson = new JSONArray();
-            for (Purchase purchase : purchases) {
-                JSONObject detailJson = GetPurchaseJson(purchase);
-                purchasesJson.put(detailJson);
-            }
-            
-            if (!purchases.stream().noneMatch(purchase -> "golden_dice".equals(purchase.getSku()))) {
-                AptoLog("golden_dice already purchased");
-                isGoldenDiceSubsActive = true;
-            }
-
-            
-            JSONObject jsonObject = new JSONObject();
-            try {
-                jsonObject.put("msg", MSG_QUERY_PURCHASES_RESULT);
-                jsonObject.put("succeed", true);
-                jsonObject.put("purchases", purchasesJson);
-            }
-            catch (JSONException e)
-            {
-                e.printStackTrace();
-            }
-
-            SendUnityMessage(jsonObject);
-        });
-    }
-
-    public static void ProductsStartConsume(String strToken)
-    {
-        AptoLog("Products Start Consume");
-        List<String> tokenList = new ArrayList<String>(Arrays.asList(strToken.split(";")));
-        AptoLog("tokenList = " + tokenList);
-
-        for(String token: tokenList)
-        {
-            cab.consumeAsync(token, consumeResponseListener);
-        }
-    }
-
+    //HELPERS UNITY
     public static void SendUnityMessage(JSONObject jsonObject)
     {
         UnityPlayer.UnitySendMessage(unityClassName, "OnMsgFromPlugin", jsonObject.toString());
     }
-
-    public static JSONObject GetSkuDetailsJson(SkuDetails skuDetails)
-    {
-        JSONObject jsonObject = new JSONObject();
-
-        try {
-            jsonObject.put("appPrice", skuDetails.getAppcPrice());
-            jsonObject.put("appcPriceAmountMicros", skuDetails.getAppcPriceAmountMicros());
-            jsonObject.put("appcPriceCurrencyCode", skuDetails.getAppcPriceCurrencyCode());
-            jsonObject.put("description", skuDetails.getDescription());
-            jsonObject.put("fiatPrice", skuDetails.getFiatPrice());
-            jsonObject.put("fiatPriceAmountMicros", skuDetails.getFiatPriceAmountMicros());
-            jsonObject.put("fiatPriceCurrencyCode", skuDetails.getFiatPriceCurrencyCode());
-            jsonObject.put("itemType", skuDetails.getItemType());
-
-             AptoLog("prix: " + skuDetails.getPrice());
-
-            jsonObject.put("price", skuDetails.getPrice());
-            jsonObject.put("priceAmountMicros", skuDetails.getPriceAmountMicros());
-            jsonObject.put("priceCurrencyCode", skuDetails.getPriceCurrencyCode());
-            jsonObject.put("sku", skuDetails.getSku());
-            jsonObject.put("title", skuDetails.getTitle());
-            jsonObject.put("type", skuDetails.getType());
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-
-        return jsonObject;
-    }
-
+ 
     public static JSONObject GetPurchaseJson(Purchase purchase)
     {
         JSONObject jsonObject = new JSONObject();
@@ -470,47 +257,121 @@ public class AppCoinsAdapter {
         return jsonObject;
     }
 
-    public static void AptoLog(String msg) {
-        if (needLog) {
-            //Log.d(LOG_TAG, msg);
-            Log.d(LOG_TAG, new String(msg.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
-        }
-    }
+    public static JSONObject GetSkuDetailsJson(SkuDetails skuDetails)
+    {
+        JSONObject jsonObject = new JSONObject();
 
-    public static boolean IsCabInitialized() {
-        return isCabInitialized;
-    }
-
-    public static boolean HasWallet() {
-        Context context = activity.getApplicationContext();
-        PackageManager pm = context.getPackageManager();
         try {
-            pm.getPackageInfo("com.appcoins.wallet", PackageManager.GET_ACTIVITIES);
-            return true;
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
+            jsonObject.put("appPrice", skuDetails.getAppcPrice());
+            jsonObject.put("appcPriceAmountMicros", skuDetails.getAppcPriceAmountMicros());
+            jsonObject.put("appcPriceCurrencyCode", skuDetails.getAppcPriceCurrencyCode());
+            jsonObject.put("description", skuDetails.getDescription());
+            jsonObject.put("fiatPrice", skuDetails.getFiatPrice());
+            jsonObject.put("fiatPriceAmountMicros", skuDetails.getFiatPriceAmountMicros());
+            jsonObject.put("fiatPriceCurrencyCode", skuDetails.getFiatPriceCurrencyCode());
+            jsonObject.put("itemType", skuDetails.getItemType());
+            jsonObject.put("price", skuDetails.getPrice());
+            jsonObject.put("priceAmountMicros", skuDetails.getPriceAmountMicros());
+            jsonObject.put("priceCurrencyCode", skuDetails.getPriceCurrencyCode());
+            jsonObject.put("sku", skuDetails.getSku());
+            jsonObject.put("title", skuDetails.getTitle());
+            jsonObject.put("type", skuDetails.getType());
         }
+        catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+
+        return jsonObject;
     }
 
 
-    public static String GetPrice(String sku) {
-        AptoLog("SKU GetPrice AppCoinsAdapter: " + sku );
-        AptoLog("attempts GetPrice AppCoinsAdapter: " + _attemptsPrice );
-        AptoLog("gold Dice GetPrice AppCoinsAdapter: " + _goldDicePrice );
+    //BRIDGE ADAPTERS UNITY - SDK
+    public static void ProductsStartGet(String strSku)
+    {
+        List<String> skuList = new ArrayList<String>(Arrays.asList(strSku.split(";")));
         
-        if (sku.equals("attempts")) {
-            return _attemptsPrice;
-        }
-        if (sku.equals("golden_dice")) {
-            return _goldDicePrice;
-        }
+        SkuDetailsParams skuDetailsParams = new SkuDetailsParams();
+        skuDetailsParams.setItemType(SkuType.inapp.toString());
+        skuDetailsParams.setMoreItemSkus(skuList);
+        billingClient.querySkuDetailsAsync(skuDetailsParams, skuDetailsResponseListener);
+    }
 
-        return "";
+    public static void ProductsStartPay(String sku, String developerPayload)
+    {
+        String skuType = SkuType.inapp.toString();
+        BillingFlowParams billingFlowParams =
+                new BillingFlowParams(
+                        sku,
+                        skuType,
+                        null, // Deprecated parameter orderReference
+                        developerPayload,
+                        "BDS"
+                );
+
+        final int responseCode = billingClient.launchBillingFlow(activity, billingFlowParams);
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("msg", MSG_LAUNCH_BILLING_RESULT);
+                    jsonObject.put("succeed", responseCode == ResponseCode.OK.getValue());
+                    jsonObject.put("responseCode", responseCode);
+                }
+                catch (JSONException e)
+                {
+                    e.printStackTrace();
+                }
+
+                SendUnityMessage(jsonObject);
+            }
+        });
+    }
+
+    public static void ProductsStartSubsPay(String sku, String developerPayload)
+    {
+        String skuType = SkuType.subs.toString();
+        BillingFlowParams billingFlowParams =
+                new BillingFlowParams(
+                        sku,
+                        skuType,
+                        null, // Deprecated parameter orderReference
+                        developerPayload,
+                        "BDS"
+                );
+        
+        final int responseCode = billingClient.launchBillingFlow(activity, billingFlowParams);
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("msg", MSG_LAUNCH_BILLING_RESULT);
+                    jsonObject.put("succeed", responseCode == ResponseCode.OK.getValue());
+                    jsonObject.put("responseCode", responseCode);
+                }
+                catch (JSONException e)
+                {
+                    e.printStackTrace();
+                }
+
+                SendUnityMessage(jsonObject);
+            }
+        });
+    }
+
+    public static void ProductsStartConsume(String strToken)
+    {
+        List<String> tokenList = new ArrayList<String>(Arrays.asList(strToken.split(";")));
+        
+        for(String token: tokenList)
+        {
+            billingClient.consumeAsync(token, consumeResponseListener);
+        }
     }
 
 
-    public static boolean IsGoldenDiceSubsActive(){
-        AptoLog("1Golden Dice Active: " + isGoldenDiceSubsActive );
-        return isGoldenDiceSubsActive;
-    }
+
 }
