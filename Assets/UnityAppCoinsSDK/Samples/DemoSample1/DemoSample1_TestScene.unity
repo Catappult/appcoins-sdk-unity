@@ -670,13 +670,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 897311351}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d28d5e43bd9034b4e9b2389e59c15470, type: 3}
+  m_Script: {fileID: 11500000, guid: 7eed70296c5bb4bc18addb93a54b0b1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  publicKey: INSERT
-  skuInApp: INSERT
-  skuSubscription: INSERT
-  developerPayload: INSERT
 --- !u!1 &1068373620
 GameObject:
   m_ObjectHideFlags: 0
@@ -908,15 +904,15 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 897311356}
-        m_TargetAssemblyTypeName: UnityAppCoinsSDK.AptoPurchaseManager, UnityAppCoinsSDK.Runtime
-        m_MethodName: StartSubscription
-        m_Mode: 1
+        m_TargetAssemblyTypeName: AptoideBillingSDKManager, UnityAppCoinsSDK.Runtime
+        m_MethodName: LaunchBillingFlow
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: golden_dice
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1466737403
@@ -1189,15 +1185,15 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 897311356}
-        m_TargetAssemblyTypeName: UnityAppCoinsSDK.AptoPurchaseManager, UnityAppCoinsSDK.Runtime
-        m_MethodName: StartPurchase
-        m_Mode: 1
+        m_TargetAssemblyTypeName: AptoideBillingSDKManager, UnityAppCoinsSDK.Runtime
+        m_MethodName: LaunchBillingFlow
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: attempts
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &1554441599
