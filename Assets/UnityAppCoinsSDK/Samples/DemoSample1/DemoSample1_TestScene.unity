@@ -574,8 +574,6 @@ GameObject:
   - component: {fileID: 897311354}
   - component: {fileID: 897311353}
   - component: {fileID: 897311352}
-  - component: {fileID: 897311355}
-  - component: {fileID: 897311356}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -649,30 +647,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &897311355
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 897311351}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce4da82f65e6540e492c84501f8077d0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &897311356
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 897311351}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7eed70296c5bb4bc18addb93a54b0b1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1068373620
 GameObject:
   m_ObjectHideFlags: 0
@@ -757,7 +731,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 897311355}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UnityAppCoinsSDK.MainMenu, UnityAppCoinsSDK.Runtime
         m_MethodName: PlayGame
         m_Mode: 5
@@ -890,31 +864,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1466737403}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 897311355}
-        m_TargetAssemblyTypeName: UnityAppCoinsSDK.MainMenu, UnityAppCoinsSDK.Runtime
-        m_MethodName: PlayGame
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: Subscribe
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 897311356}
-        m_TargetAssemblyTypeName: AptoideBillingSDKManager, UnityAppCoinsSDK.Runtime
-        m_MethodName: LaunchBillingFlow
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: golden_dice
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1466737403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1171,31 +1121,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1554441599}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 897311355}
-        m_TargetAssemblyTypeName: UnityAppCoinsSDK.MainMenu, UnityAppCoinsSDK.Runtime
-        m_MethodName: PlayGame
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: Purchase
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 897311356}
-        m_TargetAssemblyTypeName: AptoideBillingSDKManager, UnityAppCoinsSDK.Runtime
-        m_MethodName: LaunchBillingFlow
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: attempts
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1554441599
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1318,7 +1244,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 897311355}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UnityAppCoinsSDK.MainMenu, UnityAppCoinsSDK.Runtime
         m_MethodName: PlayGame
         m_Mode: 5
