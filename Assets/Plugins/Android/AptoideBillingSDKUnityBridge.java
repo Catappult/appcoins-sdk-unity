@@ -40,7 +40,7 @@ public class AptoideBillingSDKUnityBridge {
                 public void onBillingSetupFinished(int responseCode) {
                     Log.d(TAG, "Billing setup finished.");
                     UnityPlayer.UnitySendMessage(unityClassName,
-                            "OnBillingSetupFinished",
+                            "BillingSetupFinishedCallback",
                             "" + responseCode);
                 }
 
@@ -48,7 +48,7 @@ public class AptoideBillingSDKUnityBridge {
                 public void onBillingServiceDisconnected() {
                     Log.d(TAG, "Billing service disconnected.");
                     UnityPlayer.UnitySendMessage(unityClassName,
-                            "OnBillingServiceDisconnected",
+                            "BillingServiceDisconnectedCallback",
                             "");
                 }
             };
@@ -56,21 +56,21 @@ public class AptoideBillingSDKUnityBridge {
     private static PurchasesUpdatedListener purchasesUpdatedListener =
             (responseCode, purchases) -> {
                 Log.d(TAG, "Purchase updated: " + responseCode);
-                UnityPlayer.UnitySendMessage(unityClassName, "OnPurchasesUpdated",
+                UnityPlayer.UnitySendMessage(unityClassName, "PurchasesUpdatedCallback",
                         purchasesResultToJson(responseCode, purchases));
             };
 
     private static SkuDetailsResponseListener skuDetailsResponseListener =
             (responseCode, skuDetailsList) -> {
                 Log.d(TAG, "SKU details received: " + responseCode);
-                UnityPlayer.UnitySendMessage(unityClassName, "OnSkuDetailsReceived",
+                UnityPlayer.UnitySendMessage(unityClassName, "SkuDetailsResponseCallback",
                         skuDetailsResultToJson(responseCode, skuDetailsList));
             };
 
     private static ConsumeResponseListener consumeResponseListener =
             (responseCode, purchaseToken) -> {
                 Log.d(TAG, "Consume response: " + purchaseToken + ", result: " + responseCode);
-                UnityPlayer.UnitySendMessage(unityClassName, "OnConsumeResponse",
+                UnityPlayer.UnitySendMessage(unityClassName, "ConsumeResponseCallback",
                         consumeResultToJson(responseCode, purchaseToken));
             };
 
@@ -98,11 +98,7 @@ public class AptoideBillingSDKUnityBridge {
 
     public static void querySkuDetailsAsync(List<String> skuList, String skuType) {
         SkuDetailsParams params = new SkuDetailsParams();
-        if (Objects.equals(skuType, SkuType.inapp.name())) {
-            params.setMoreItemSkus(skuList);
-        } else {
-            params.setMoreSubsSkus(skuList);
-        }
+        params.setMoreItemSkus(skuList);
         params.setItemType(skuType);
         billingClient.querySkuDetailsAsync(params, skuDetailsResponseListener);
     }
@@ -211,7 +207,7 @@ public class AptoideBillingSDKUnityBridge {
                 }
                 skuDetailsjsonArray.put(skuDetailsJsonObject);
             }
-            jsonObject.put("skuDetailsList", skuDetailsjsonArray);
+            jsonObject.put("skuDetails", skuDetailsjsonArray);
         } catch (JSONException exception) {
             Log.e(TAG, "skuDetailsResultToJson: ", exception);
             return new JSONObject().toString();

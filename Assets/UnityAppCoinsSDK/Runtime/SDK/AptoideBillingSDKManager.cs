@@ -1,197 +1,169 @@
 using UnityEngine;
 using System;
 using System.Linq;
-using System.Collections.Generic;
 
-
-namespace UnityAppCoinsSDK
+public class AptoideBillingSDKManager : MonoBehaviour
 {
-    [Serializable]
-    public class SkuDetailsResult
+    private static AptoideBillingSDKManager instance;
+    private static AndroidJavaObject aptoideBillingSDKUnityBridge;
+
+    private static IAppCoinsBillingStateListener appCoinsBillingStateListener;
+    private static IConsumeResponseListener consumeResponseListener;
+    private static IPurchasesUpdatedListener purchasesUpdatedListener;
+    private static ISkuDetailsResponseListener skuDetailsResponseListener;
+
+    public static void InitializePlugin(IAppCoinsBillingStateListener _appCoinsBillingStateListener,
+    IConsumeResponseListener _consumeResponseListener,
+    IPurchasesUpdatedListener _purchasesUpdatedListener,
+    ISkuDetailsResponseListener _skuDetailsResponseListener,
+    string publicKey,
+    string className)
     {
-        public int responseCode;
-        public List<SkuDetails> skuList;
+        appCoinsBillingStateListener = _appCoinsBillingStateListener;
+        consumeResponseListener = _consumeResponseListener;
+        purchasesUpdatedListener = _purchasesUpdatedListener;
+        skuDetailsResponseListener = _skuDetailsResponseListener;
+
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            aptoideBillingSDKUnityBridge = new AndroidJavaObject("AptoideBillingSDKUnityBridge");
+            Initialize(publicKey, className);
+            StartConnection();
+        }
     }
 
-    [Serializable]
-    public class SkuDetails
+    // ---- SDK Methods ----
+
+    public static void Initialize(string publicKey, string className)
     {
-        public string sku;
-        public string title;
-        public string description;
-        public string price;
-        public string priceCurrencyCode;
-        public string priceAmountMicros;
+        aptoideBillingSDKUnityBridge?.CallStatic("initialize", className, publicKey);
     }
 
-    public class AptoideBillingSDKManager : MonoBehaviour
+    public static void StartConnection()
     {
-        private static AptoideBillingSDKManager instance;
-        private static AndroidJavaObject aptoideBillingSDKUnityBridge;
+        aptoideBillingSDKUnityBridge?.CallStatic("startConnection");
+    }
 
-        private IAppCoinsBillingStateListener appCoinsBillingStateListener;
-        private IConsumeResponseListener consumeResponseListener;
-        private IPurchasesUpdatedListener purchasesUpdatedListener;
-        private ISkuDetailsResponseListener skuDetailsResponseListener;
+    public static void EndConnection()
+    {
+        aptoideBillingSDKUnityBridge?.CallStatic("endConnection");
+    }
 
+    public static bool IsReady()
+    {
+        bool isReady = aptoideBillingSDKUnityBridge?.CallStatic<bool>("isReady") ?? false;
+        Debug.Log($"AptoideBillingSDKManager | IsReady: {isReady}");
 
-        public void InitializePlugin(IAppCoinsBillingStateListener appCoinsBillingStateListener,
-        IConsumeResponseListener consumeResponseListener,
-        IPurchasesUpdatedListener purchasesUpdatedListener,
-        ISkuDetailsResponseListener skuDetailsResponseListener,
-        string publicKey)
+        return isReady;
+    }
+
+    public static void QuerySkuDetailsAsync(string[] skus, string skuType)
+    {
+        using (AndroidJavaObject skuList = new AndroidJavaObject("java.util.ArrayList"))
         {
-            this.appCoinsBillingStateListener = appCoinsBillingStateListener;
-            this.consumeResponseListener = consumeResponseListener;
-            this.purchasesUpdatedListener = purchasesUpdatedListener;
-            this.skuDetailsResponseListener = skuDetailsResponseListener;
-
-            if (Application.platform == RuntimePlatform.Android)
+            foreach (string sku in skus)
             {
-                aptoideBillingSDKUnityBridge = new AndroidJavaObject("AptoideBillingSDKUnityBridge");
-                Initialize(publicKey);
-                StartConnection();
+                skuList.Call<bool>("add", sku);
             }
+            aptoideBillingSDKUnityBridge?.CallStatic("querySkuDetailsAsync", skuList, skuType);
         }
+    }
 
-        // ---- SDK Methods ----
+    public static int LaunchBillingFlow(string sku, string skuType, string developerPayload)
+    {
+        int launchBillingFlowResponseCode = aptoideBillingSDKUnityBridge?.CallStatic<int>("launchBillingFlow", sku, skuType, developerPayload) ?? -1;
+        Debug.Log($"AptoideBillingSDKManager | LaunchBillingFlow: {launchBillingFlowResponseCode}");
 
-        public void Initialize(string publicKey)
-        {
-            aptoideBillingSDKUnityBridge?.CallStatic("initialize", this.gameObject.name, publicKey);
-        }
+        return launchBillingFlowResponseCode;
+    }
 
-        public static void StartConnection()
-        {
-            aptoideBillingSDKUnityBridge?.CallStatic("startConnection");
-        }
+    public static void ConsumeAsync(string purchaseToken)
+    {
+        aptoideBillingSDKUnityBridge?.CallStatic("consumeAsync", purchaseToken);
+    }
 
-        public static void EndConnection()
-        {
-            aptoideBillingSDKUnityBridge?.CallStatic("endConnection");
-        }
+    public static int IsFeatureSupported(string feature)
+    {
+        int isFeatureSupportedResponseCode = aptoideBillingSDKUnityBridge?.CallStatic<int>("isFeatureSupported", feature) ?? -1;
+        Debug.Log($"AptoideBillingSDKManager | IsFeatureSupported: {isFeatureSupportedResponseCode}");
 
-        public static bool IsReady()
-        {
-            bool isReady = aptoideBillingSDKUnityBridge?.CallStatic<bool>("isReady") ?? false;
-            Debug.Log($"AptoideBillingSDKManager | IsReady: {isReady}");
+        return isFeatureSupportedResponseCode;
+    }
 
-            return isReady;
-        }
+    public static PurchasesResult QueryPurchases(string skuType)
+    {
+        string purchasesResultJson = aptoideBillingSDKUnityBridge?.CallStatic<string>("queryPurchases", skuType);
+        Debug.Log($"AptoideBillingSDKManager | QueryPurchases: {purchasesResultJson}");
 
-        public static void QuerySkuDetailsAsync(string[] skus, string skuType)
-        {
-            using (AndroidJavaObject skuList = new AndroidJavaObject("java.util.ArrayList"))
-            {
-                foreach (string sku in skus)
-                {
-                    skuList.Call<bool>("add", sku);
-                }
-                aptoideBillingSDKUnityBridge?.CallStatic("querySkuDetailsAsync", skuList, skuType);
-            }
-        }
+        PurchasesResult purchasesResult = JsonUtility.FromJson<PurchasesResult>(purchasesResultJson);
+        return purchasesResult;
+    }
 
-        public static int LaunchBillingFlow(string sku, string skuType, string developerPayload)
-        {
-            int launchBillingFlowResponseCode = aptoideBillingSDKUnityBridge?.CallStatic<int>("launchBillingFlow", sku, skuType, developerPayload) ?? -1;
-            Debug.Log($"AptoideBillingSDKManager | LaunchBillingFlow: {launchBillingFlowResponseCode}");
+    public static ReferralDeeplinkResult GetReferralDeeplink()
+    {
+        string referralDeeplinkJson = aptoideBillingSDKUnityBridge?.CallStatic<string>("getReferralDeeplink");
+        Debug.Log($"AptoideBillingSDKManager | GetReferralDeeplink: {referralDeeplinkJson}");
 
-            return launchBillingFlowResponseCode;
-        }
+        ReferralDeeplinkResult referralDeeplinkResult = JsonUtility.FromJson<ReferralDeeplinkResult>(referralDeeplinkJson);
+        return referralDeeplinkResult;
+    }
 
-        public static void ConsumeAsync(string purchaseToken)
-        {
-            aptoideBillingSDKUnityBridge?.CallStatic("consumeAsync", purchaseToken);
-        }
+    public static bool IsAppUpdateAvailable()
+    {
+        bool isAppUpdateAvailable = aptoideBillingSDKUnityBridge?.CallStatic<bool>("isAppUpdateAvailable") ?? false;
+        Debug.Log($"AptoideBillingSDKManager | IsAppUpdateAvailable: {isAppUpdateAvailable}");
 
-        public static int IsFeatureSupported(string feature)
-        {
-            int isFeatureSupportedResponseCode = aptoideBillingSDKUnityBridge?.CallStatic<int>("isFeatureSupported", feature) ?? -1;
-            Debug.Log($"AptoideBillingSDKManager | IsFeatureSupported: {isFeatureSupportedResponseCode}");
+        return isAppUpdateAvailable;
+    }
 
-            return isFeatureSupportedResponseCode;
-        }
+    public static void LaunchAppUpdateDialog()
+    {
+        aptoideBillingSDKUnityBridge?.CallStatic("launchAppUpdateDialog");
+    }
 
-        public static PurchasesResult QueryPurchases(string skuType)
-        {
-            string purchasesResultJson = aptoideBillingSDKUnityBridge?.CallStatic<string>("queryPurchases", skuType);
-            Debug.Log($"AptoideBillingSDKManager | QueryPurchases: {purchasesResultJson}");
+    public static void LaunchAppUpdateStore()
+    {
+        aptoideBillingSDKUnityBridge?.CallStatic("launchAppUpdateStore");
+    }
 
-            PurchasesResult purchasesResult = JsonUtility.FromJson<PurchasesResult>(purchasesResultJson);
-            return purchasesResult;
-        }
+    // ---- Callback Handlers from Java ----
 
-        public static ReferralDeeplinkResult GetReferralDeeplink()
-        {
-            string referralDeeplinkJson = aptoideBillingSDKUnityBridge?.CallStatic<string>("getReferralDeeplink");
-            Debug.Log($"AptoideBillingSDKManager | GetReferralDeeplink: {referralDeeplinkJson}");
+    public void BillingSetupFinishedCallback(string responseCode)
+    {
+        Debug.Log("AppCoins Billing Setup Finished");
+        appCoinsBillingStateListener.OnBillingSetupFinished(int.Parse(responseCode));
+    }
 
-            ReferralDeeplinkResult referralDeeplinkResult = JsonUtility.FromJson<ReferralDeeplinkResult>(referralDeeplinkJson);
-            return referralDeeplinkResult;
-        }
+    public void BillingServiceDisconnectedCallback(string _)
+    {
+        Debug.LogWarning("AptoideBillingSDKManager | AppCoins Billing Service Disconnected");
+        appCoinsBillingStateListener.OnBillingServiceDisconnected();
+    }
 
-        public static bool IsAppUpdateAvailable()
-        {
-            bool isAppUpdateAvailable = aptoideBillingSDKUnityBridge?.CallStatic<bool>("isAppUpdateAvailable") ?? false;
-            Debug.Log($"AptoideBillingSDKManager | IsAppUpdateAvailable: {isAppUpdateAvailable}");
+    public void PurchasesUpdatedCallback(string purchasesResultJson)
+    {
+        Debug.Log($"AptoideBillingSDKManager | Purchase Updated: {purchasesResultJson}");
 
-            return isAppUpdateAvailable;
-        }
+        PurchasesResult purchasesResult = JsonUtility.FromJson<PurchasesResult>(purchasesResultJson);
 
-        public static void LaunchAppUpdateDialog()
-        {
-            aptoideBillingSDKUnityBridge?.CallStatic("launchAppUpdateDialog");
-        }
+        purchasesUpdatedListener.OnPurchasesUpdated(purchasesResult.responseCode, purchasesResult.purchases);
+    }
 
-        public static void LaunchAppUpdateStore()
-        {
-            aptoideBillingSDKUnityBridge?.CallStatic("launchAppUpdateStore");
-        }
+    public void SkuDetailsResponseCallback(string skuDetailsResultJson)
+    {
+        Debug.Log($"AptoideBillingSDKManager | SKU Details Received: {skuDetailsResultJson}");
 
-        // ---- Callback Handlers from Java ----
+        SkuDetailsResult skuDetailsResult = JsonUtility.FromJson<SkuDetailsResult>(skuDetailsResultJson);
 
-        public void OnBillingSetupFinished(string responseCode)
-        {
-            Debug.Log("AppCoins Billing Setup Finished");
-            appCoinsBillingStateListener.OnBillingSetupFinished(int.Parse(responseCode));
-        }
+        skuDetailsResponseListener.OnSkuDetailsResponse(skuDetailsResult.responseCode, skuDetailsResult.skuDetails);
+    }
 
-        public void OnBillingServiceDisconnected(string _)
-        {
-            Debug.LogWarning("AptoideBillingSDKManager | AppCoins Billing Service Disconnected");
-            appCoinsBillingStateListener.OnBillingServiceDisconnected();
-        }
+    public void ConsumeResponseCallback(string consumeResultJson)
+    {
+        Debug.Log($"AptoideBillingSDKManager | Consume Response: {consumeResultJson}");
 
-        public void OnPurchasesUpdated(string purchasesResultJson)
-        {
-            Debug.Log($"AptoideBillingSDKManager | Purchase Updated: {purchasesResultJson}");
+        ConsumeResult consumeResult = JsonUtility.FromJson<ConsumeResult>(consumeResultJson);
 
-            PurchasesResult purchasesResult = JsonUtility.FromJson<PurchasesResult>(purchasesResultJson);
-
-            // Convert Purchase[] to List<Purchase>
-            var purchasesList = purchasesResult.purchases != null 
-                ? purchasesResult.purchases.ToList() 
-                : new List<Purchase>();
-
-            purchasesUpdatedListener.OnPurchasesUpdated(purchasesResult.responseCode, purchasesList);
-        }
-
-        public void OnSkuDetailsReceived(string skuDetailsResultJson)
-        {
-            Debug.Log($"AptoideBillingSDKManager | SKU Details Received: {skuDetailsResultJson}");
-
-            SkuDetailsResult skuDetailsResult = JsonUtility.FromJson<SkuDetailsResult>(skuDetailsResultJson);
-
-            skuDetailsResponseListener.OnSkuDetailsReceived(skuDetailsResult.responseCode, skuDetailsResult.skuList);
-        }
-
-        public void OnConsumeResponse(string consumeResultJson)
-        {
-            Debug.Log($"AptoideBillingSDKManager | Consume Response: {consumeResultJson}");
-
-            ConsumeResult consumeResult = JsonUtility.FromJson<ConsumeResult>(consumeResultJson);
-
-            consumeResponseListener.OnConsumeResponse(consumeResult.responseCode, consumeResult.purchaseToken);
-        }
+        consumeResponseListener.OnConsumeResponse(consumeResult.responseCode, consumeResult.purchaseToken);
     }
 }
