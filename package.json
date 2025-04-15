@@ -19,13 +19,6 @@
         "appcoins",
         "SDK"
     ],
-    "samples": [
-        {
-            "displayName": "AppBlankDemo",
-            "description": "Simple AppBlank Demo with AppCoinsBilling SDK integrated",
-            "path": "Samples~/DemoSample1"
-        }
-    ],
     "author": {
         "name": "Aptoide",
         "email": "support@connect.aptoide.com", 
