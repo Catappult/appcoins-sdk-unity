@@ -5,8 +5,6 @@ import com.appcoins.sdk.billing.listeners.ConsumeResponseListener;
 import com.appcoins.sdk.billing.listeners.SkuDetailsResponseListener;
 import com.appcoins.sdk.billing.types.SkuType;
 
-
-
 import com.appcoins.sdk.billing.listeners.*;
 import com.appcoins.sdk.billing.AppcoinsBillingClient;
 import com.appcoins.sdk.billing.PurchasesUpdatedListener;
@@ -177,7 +175,8 @@ public class AptoideBillingSDKUnityBridge {
         return jsonObject.toString();
     }
 
-    private static String skuDetailsResultToJson(int responseCode, List<SkuDetails> skuDetailsList) {
+    private static String skuDetailsResultToJson(int responseCode,
+            List<SkuDetails> skuDetailsList) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("responseCode", responseCode);

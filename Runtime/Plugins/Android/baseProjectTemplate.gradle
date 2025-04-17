@@ -3,6 +3,10 @@ allprojects {
         repositories {**ARTIFACTORYREPOSITORY**
             google()
             jcenter()
+            maven {
+                name = "Sonatype-Snapshots"
+                url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
+            }
         }
 
         dependencies {
@@ -20,6 +24,10 @@ allprojects {
         jcenter()
         flatDir {
             dirs "${project(':unityLibrary').projectDir}/libs"
+        }
+        maven {
+            name = "Sonatype-Snapshots"
+            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
         }
     }
 }
