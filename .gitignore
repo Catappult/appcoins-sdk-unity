@@ -13,3 +13,6 @@
 
 /t_BurstDebugInformation_DoNotShip/
 /t.apk
+/.idea
+/ProjectSettings
+/Packages
