@@ -77,6 +77,14 @@ public class AptoideBillingSDKManager : MonoBehaviour
         return launchBillingFlowResponseCode;
     }
 
+    public static int LaunchBillingFlow(string sku, string skuType, string developerPayload, string obfuscatedAccountId, bool freeTrial)
+    {
+        int launchBillingFlowResponseCode = aptoideBillingSDKUnityBridge?.CallStatic<int>("launchBillingFlow", sku, skuType, developerPayload, obfuscatedAccountId, freeTrial) ?? -1;
+        Debug.Log($"AptoideBillingSDKManager | LaunchBillingFlow: {launchBillingFlowResponseCode}");
+
+        return launchBillingFlowResponseCode;
+    }
+
     public static void ConsumeAsync(string purchaseToken)
     {
         aptoideBillingSDKUnityBridge?.CallStatic("consumeAsync", purchaseToken);

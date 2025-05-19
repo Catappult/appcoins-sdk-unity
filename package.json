@@ -1,6 +1,6 @@
 {
   "name": "com.aptoide.unityappcoinssdk",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "displayName": "Aptoide Unity SDK",
   "description": "UPM for AppCoinsBilling SDK Integration",
   "unity": "2021.3",
