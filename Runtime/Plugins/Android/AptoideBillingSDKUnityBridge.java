@@ -107,6 +107,13 @@ public class AptoideBillingSDKUnityBridge {
         return billingClient.launchBillingFlow(UnityPlayer.currentActivity, flowParams);
     }
 
+    public static int launchBillingFlow(String sku, String skuType, String developerPayload,
+            String obfuscatedAccountId, boolean freeTrial) {
+        BillingFlowParams flowParams = new BillingFlowParams(sku, skuType, null, developerPayload,
+                "BDS", obfuscatedAccountId, freeTrial);
+        return billingClient.launchBillingFlow(UnityPlayer.currentActivity, flowParams);
+    }
+
     public static void consumeAsync(String purchaseToken) {
         billingClient.consumeAsync(purchaseToken, consumeResponseListener);
     }
@@ -161,6 +168,7 @@ public class AptoideBillingSDKUnityBridge {
                 purchaseJsonObject.put("purchaseTime", purchase.getPurchaseTime());
                 purchaseJsonObject.put("purchaseState", purchase.getPurchaseState());
                 purchaseJsonObject.put("developerPayload", purchase.getDeveloperPayload());
+                purchaseJsonObject.put("obfuscatedAccountId", purchase.getObfuscatedAccountId());
                 purchaseJsonObject.put("token", purchase.getToken());
                 purchaseJsonObject.put("originalJson", purchase.getOriginalJson());
                 purchaseJsonObject.put("signature", purchase.getSignature());
@@ -203,6 +211,15 @@ public class AptoideBillingSDKUnityBridge {
                 skuDetailsJsonObject.put("title", skuDetails.getTitle());
                 if (skuDetails.getDescription() != null) {
                     skuDetailsJsonObject.put("description", skuDetails.getDescription());
+                }
+                if (skuDetails.getPeriod() != null) {
+                    skuDetailsJsonObject.put("period", skuDetails.getPeriod());
+                }
+                if (skuDetails.getTrialPeriod() != null) {
+                    skuDetailsJsonObject.put("trialPeriod", skuDetails.getTrialPeriod());
+                }
+                if (skuDetails.getTrialPeriodEndDate() != null) {
+                    skuDetailsJsonObject.put("trialPeriodEndDate", skuDetails.getTrialPeriodEndDate());
                 }
                 skuDetailsjsonArray.put(skuDetailsJsonObject);
             }
