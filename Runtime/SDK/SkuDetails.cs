@@ -16,4 +16,7 @@ public class SkuDetails
     public string fiatPriceCurrencyCode;
     public string title;
     public string description;
+    public string period;
+    public string trialPeriod;
+    public string trialPeriodEndDate;
 }

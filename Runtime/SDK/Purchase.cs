@@ -3,6 +3,7 @@ public class Purchase
 {
     // Purchase details
     public string developerPayload;
+    public string obfuscatedAccountId;
     public bool isAutoRenewing;
     public string itemType;
     public string orderId;
