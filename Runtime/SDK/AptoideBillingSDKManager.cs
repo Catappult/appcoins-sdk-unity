@@ -98,7 +98,7 @@ public class AptoideBillingSDKManager : MonoBehaviour
         using (AndroidJavaObject productsList = new AndroidJavaObject("java.util.ArrayList"))
         {
             string productType = null;
-            foreach (QueryProductDetailsParams.Product productParams in queryProductDetailsParams.productsList)
+            foreach (QueryProductDetailsParams.Product productParams in queryProductDetailsParams.ProductList)
             {
                 productType = productParams.productType;
                 productsList.Call<bool>("add", productParams.productId);
