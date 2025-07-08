@@ -10,7 +10,9 @@ public class AptoideBillingSDKManager : MonoBehaviour
     private static IAppCoinsBillingStateListener appCoinsBillingStateListener;
     private static IConsumeResponseListener consumeResponseListener;
     private static IPurchasesUpdatedListener purchasesUpdatedListener;
+    private static IPurchasesResponseListener purchasesResponseListener;
     private static ISkuDetailsResponseListener skuDetailsResponseListener;
+    private static IProductDetailsResponseListener productDetailsResponseListener;
 
     public static void InitializePlugin(IAppCoinsBillingStateListener _appCoinsBillingStateListener,
     IConsumeResponseListener _consumeResponseListener,
@@ -23,6 +25,28 @@ public class AptoideBillingSDKManager : MonoBehaviour
         consumeResponseListener = _consumeResponseListener;
         purchasesUpdatedListener = _purchasesUpdatedListener;
         skuDetailsResponseListener = _skuDetailsResponseListener;
+
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            aptoideBillingSDKUnityBridge = new AndroidJavaObject("AptoideBillingSDKUnityBridge");
+            Initialize(publicKey, className);
+            StartConnection();
+        }
+    }
+
+    public static void InitializePlugin(IAppCoinsBillingStateListener _appCoinsBillingStateListener,
+    IConsumeResponseListener _consumeResponseListener,
+    IPurchasesUpdatedListener _purchasesUpdatedListener,
+    IProductDetailsResponseListener _productDetailsResponseListener,
+    IPurchasesResponseListener _purchasesResponseListener,
+    string publicKey,
+    string className)
+    {
+        appCoinsBillingStateListener = _appCoinsBillingStateListener;
+        consumeResponseListener = _consumeResponseListener;
+        purchasesUpdatedListener = _purchasesUpdatedListener;
+        purchasesResponseListener = _purchasesResponseListener;
+        productDetailsResponseListener = _productDetailsResponseListener;
 
         if (Application.platform == RuntimePlatform.Android)
         {
@@ -69,6 +93,33 @@ public class AptoideBillingSDKManager : MonoBehaviour
         }
     }
 
+    public static void QueryProductDetailsAsync(QueryProductDetailsParams queryProductDetailsParams)
+    {
+        using (AndroidJavaObject productsList = new AndroidJavaObject("java.util.ArrayList"))
+        {
+            string productType = null;
+            foreach (QueryProductDetailsParams.Product productParams in queryProductDetailsParams.productsList)
+            {
+                productType = productParams.productType;
+                productsList.Call<bool>("add", productParams.productId);
+            }
+            aptoideBillingSDKUnityBridge?.CallStatic("queryProductDetailsAsync", productsList, productType);
+        }
+    }
+
+    public static int LaunchBillingFlow(BillingFlowParams billingFlowParams)
+    {
+        string sku = billingFlowParams.sku;
+        string skuType = billingFlowParams.skuType;
+        string developerPayload = billingFlowParams.developerPayload;
+        string obfuscatedAccountId = billingFlowParams.obfuscatedAccountId;
+        bool freeTrial = billingFlowParams.freeTrial;
+        int launchBillingFlowResponseCode = aptoideBillingSDKUnityBridge?.CallStatic<int>("launchBillingFlowV2", sku, skuType, developerPayload, obfuscatedAccountId, freeTrial) ?? -1;
+        Debug.Log($"AptoideBillingSDKManager | LaunchBillingFlow: {launchBillingFlowResponseCode}");
+
+        return launchBillingFlowResponseCode;
+    }
+
     public static int LaunchBillingFlow(string sku, string skuType, string developerPayload)
     {
         int launchBillingFlowResponseCode = aptoideBillingSDKUnityBridge?.CallStatic<int>("launchBillingFlow", sku, skuType, developerPayload) ?? -1;
@@ -90,6 +141,11 @@ public class AptoideBillingSDKManager : MonoBehaviour
         aptoideBillingSDKUnityBridge?.CallStatic("consumeAsync", purchaseToken);
     }
 
+    public static void ConsumeAsync(ConsumeParams consumeParams)
+    {
+        aptoideBillingSDKUnityBridge?.CallStatic("consumeAsync", consumeParams.purchaseToken);
+    }
+
     public static int IsFeatureSupported(string feature)
     {
         int isFeatureSupportedResponseCode = aptoideBillingSDKUnityBridge?.CallStatic<int>("isFeatureSupported", feature) ?? -1;
@@ -105,6 +161,11 @@ public class AptoideBillingSDKManager : MonoBehaviour
 
         PurchasesResult purchasesResult = JsonUtility.FromJson<PurchasesResult>(purchasesResultJson);
         return purchasesResult;
+    }
+
+    public static void QueryPurchasesAsync(string productType)
+    {
+        aptoideBillingSDKUnityBridge?.CallStatic("queryPurchasesAsync", productType);
     }
 
     public static ReferralDeeplinkResult GetReferralDeeplink()
@@ -157,6 +218,15 @@ public class AptoideBillingSDKManager : MonoBehaviour
         purchasesUpdatedListener.OnPurchasesUpdated(purchasesResult.responseCode, purchasesResult.purchases);
     }
 
+    public void PurchasesResponseCallback(string purchasesResultJson)
+    {
+        Debug.Log($"AptoideBillingSDKManager | Purchases Response: {purchasesResultJson}");
+
+        PurchasesResponseResult purchasesResponseResult = JsonUtility.FromJson<PurchasesResponseResult>(purchasesResultJson);
+
+        purchasesResponseListener.OnQueryPurchasesResponse(purchasesResponseResult.billingResult, purchasesResponseResult.purchases);
+    }
+
     public void SkuDetailsResponseCallback(string skuDetailsResultJson)
     {
         Debug.Log($"AptoideBillingSDKManager | SKU Details Received: {skuDetailsResultJson}");
@@ -164,6 +234,15 @@ public class AptoideBillingSDKManager : MonoBehaviour
         SkuDetailsResult skuDetailsResult = JsonUtility.FromJson<SkuDetailsResult>(skuDetailsResultJson);
 
         skuDetailsResponseListener.OnSkuDetailsResponse(skuDetailsResult.responseCode, skuDetailsResult.skuDetails);
+    }
+
+    public void ProductDetailsResponseCallback(string productDetailsResultJson)
+    {
+        Debug.Log($"AptoideBillingSDKManager | Product Details Received: {productDetailsResultJson}");
+
+        ProductDetailsResult productDetailsResult = JsonUtility.FromJson<ProductDetailsResult>(productDetailsResultJson);
+
+        productDetailsResponseListener.OnProductDetailsResponse(productDetailsResult.billingResult, productDetailsResult.details);
     }
 
     public void ConsumeResponseCallback(string consumeResultJson)
