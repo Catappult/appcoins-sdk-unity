@@ -100,8 +100,8 @@ public class AptoideBillingSDKManager : MonoBehaviour
             string productType = null;
             foreach (QueryProductDetailsParams.Product productParams in queryProductDetailsParams.ProductList)
             {
-                productType = productParams.productType;
-                productsList.Call<bool>("add", productParams.productId);
+                productType = productParams.ProductType;
+                productsList.Call<bool>("add", productParams.ProductId);
             }
             aptoideBillingSDKUnityBridge?.CallStatic("queryProductDetailsAsync", productsList, productType);
         }
@@ -109,11 +109,11 @@ public class AptoideBillingSDKManager : MonoBehaviour
 
     public static int LaunchBillingFlow(BillingFlowParams billingFlowParams)
     {
-        string sku = billingFlowParams.sku;
-        string skuType = billingFlowParams.skuType;
-        string developerPayload = billingFlowParams.developerPayload;
-        string obfuscatedAccountId = billingFlowParams.obfuscatedAccountId;
-        bool freeTrial = billingFlowParams.freeTrial;
+        string sku = billingFlowParams.Sku;
+        string skuType = billingFlowParams.SkuType;
+        string developerPayload = billingFlowParams.DeveloperPayload;
+        string obfuscatedAccountId = billingFlowParams.ObfuscatedAccountId;
+        bool freeTrial = billingFlowParams.FreeTrial;
         int launchBillingFlowResponseCode = aptoideBillingSDKUnityBridge?.CallStatic<int>("launchBillingFlowV2", sku, skuType, developerPayload, obfuscatedAccountId, freeTrial) ?? -1;
         Debug.Log($"AptoideBillingSDKManager | LaunchBillingFlow: {launchBillingFlowResponseCode}");
 
@@ -143,7 +143,7 @@ public class AptoideBillingSDKManager : MonoBehaviour
 
     public static void ConsumeAsync(ConsumeParams consumeParams)
     {
-        aptoideBillingSDKUnityBridge?.CallStatic("consumeAsync", consumeParams.purchaseToken);
+        aptoideBillingSDKUnityBridge?.CallStatic("consumeAsync", consumeParams.PurchaseToken);
     }
 
     public static int IsFeatureSupported(string feature)
