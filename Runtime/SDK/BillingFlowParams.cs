@@ -30,7 +30,7 @@ public class BillingFlowParams
         string developerPayload,
         string origin,
         string obfuscatedAccountId,
-        bool? freeTrial
+        bool freeTrial
     ) : this(sku, skuType, orderReference, developerPayload, origin)
     {
         ObfuscatedAccountId = obfuscatedAccountId;
@@ -42,7 +42,7 @@ public class BillingFlowParams
         private List<ProductDetailsParams> productDetailsParamsList = new List<ProductDetailsParams>();
         private string developerPayload;
         private string obfuscatedAccountId;
-        private bool? freeTrial;
+        private bool freeTrial;
 
         public Builder SetProductDetailsParamsList(List<ProductDetailsParams> list)
         {
