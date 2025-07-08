@@ -163,9 +163,9 @@ public class AptoideBillingSDKManager : MonoBehaviour
         return purchasesResult;
     }
 
-    public static void QueryPurchasesAsync(string productType)
+    public static void QueryPurchasesAsync(QueryProductDetailsParams queryProductDetailsParams)
     {
-        aptoideBillingSDKUnityBridge?.CallStatic("queryPurchasesAsync", productType);
+        aptoideBillingSDKUnityBridge?.CallStatic("queryPurchasesAsync", queryProductDetailsParams.ProductType);
     }
 
     public static ReferralDeeplinkResult GetReferralDeeplink()
