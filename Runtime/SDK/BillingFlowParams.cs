@@ -10,7 +10,7 @@ public class BillingFlowParams
     public string DeveloperPayload { get; }
     public string Origin { get; }
     public string ObfuscatedAccountId { get; set; }
-    public bool? FreeTrial { get; set; }
+    public bool FreeTrial { get; set; }
 
     [Obsolete("Deprecated constructor. Use the Builder to create the BillingFlowParams.")]
     public BillingFlowParams(string sku, string skuType, string orderReference, string developerPayload, string origin)
