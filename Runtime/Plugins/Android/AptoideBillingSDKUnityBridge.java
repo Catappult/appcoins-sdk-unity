@@ -155,7 +155,7 @@ public class AptoideBillingSDKUnityBridge {
                             .build();
             return billingClient.launchBillingFlow(UnityPlayer.currentActivity, billingFlowParams);
         } else {
-            BillingFlowParams billingFlowParams = new BillingFlowParams(sku, productType, null,
+            BillingFlowParams billingFlowParams = new BillingFlowParams(productId, productType, null,
                     developerPayload,
                     null, obfuscatedAccountId, freeTrial);
             return billingClient.launchBillingFlow(UnityPlayer.currentActivity, billingFlowParams);
