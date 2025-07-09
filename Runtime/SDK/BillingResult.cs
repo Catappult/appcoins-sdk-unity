@@ -1,6 +1,6 @@
-[System.Serializable]
 using System;
 
+[System.Serializable]
 public class BillingResult
 {
     public int? ResponseCode { get; }

@@ -1,7 +1,7 @@
-[System.Serializable]
 using System;
 using System.Collections.Generic;
 
+[System.Serializable]
 public class ProductDetails
 {
     public string ProductId { get; }
