@@ -3,14 +3,8 @@ using System;
 [System.Serializable]
 public class BillingResult
 {
-    public int? ResponseCode { get; }
-    public string DebugMessage { get; }
-
-    BillingResult(int? responseCode = null, string debugMessage = "")
-    {
-        ResponseCode = responseCode;
-        DebugMessage = debugMessage;
-    }
+    public int? ResponseCode;
+    public string DebugMessage;
 
     public override string ToString()
     {
