@@ -1,5 +1,3 @@
-package com.appcoins.diceroll.sdk.payments.billing;
-
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.appcoins.sdk.billing.*;
@@ -267,9 +265,9 @@ public class AptoideBillingSDKUnityBridge {
         JSONObject jsonObject = new JSONObject();
         try {
             JSONObject billingResultJsonObject = new JSONObject();
-            billingResultJsonObject.put("responseCode", billingResult.getResponseCode());
-            billingResultJsonObject.put("debugMessage", billingResult.getDebugMessage());
-            jsonObject.put("billingResult", billingResultJsonObject);
+            billingResultJsonObject.put("ResponseCode", billingResult.getResponseCode());
+            billingResultJsonObject.put("DebugMessage", billingResult.getDebugMessage());
+            jsonObject.put("BillingResult", billingResultJsonObject);
             JSONArray purchasesJsonArray = new JSONArray();
             for (int i = 0; i < purchases.size(); i++) {
                 Purchase purchase = purchases.get(i);
@@ -288,7 +286,7 @@ public class AptoideBillingSDKUnityBridge {
                 purchaseJsonObject.put("isAutoRenewing", purchase.isAutoRenewing());
                 purchasesJsonArray.put(purchaseJsonObject);
             }
-            jsonObject.put("purchases", purchasesJsonArray);
+            jsonObject.put("Purchases", purchasesJsonArray);
         } catch (JSONException exception) {
             Log.e(TAG, "purchasesResultToJson: ", exception);
             return new JSONObject().toString();
@@ -350,41 +348,41 @@ public class AptoideBillingSDKUnityBridge {
         JSONObject jsonObject = new JSONObject();
         try {
             JSONObject billingResultJsonObject = new JSONObject();
-            billingResultJsonObject.put("responseCode", billingResult.getResponseCode());
-            billingResultJsonObject.put("debugMessage", billingResult.getDebugMessage());
-            jsonObject.put("billingResult", billingResultJsonObject);
+            billingResultJsonObject.put("ResponseCode", billingResult.getResponseCode());
+            billingResultJsonObject.put("DebugMessage", billingResult.getDebugMessage());
+            jsonObject.put("BillingResult", billingResultJsonObject);
             JSONArray productDetailsJsonArray = new JSONArray();
             for (int i = 0; i < details.size(); i++) {
                 ProductDetails productDetails = details.get(i);
                 JSONObject productDetailsJsonObject = new JSONObject();
 
-                productDetailsJsonObject.put("productId", productDetails.getProductId());
-                productDetailsJsonObject.put("productType", productDetails.getProductType());
-                productDetailsJsonObject.put("title", productDetails.getTitle());
+                productDetailsJsonObject.put("ProductId", productDetails.getProductId());
+                productDetailsJsonObject.put("ProductType", productDetails.getProductType());
+                productDetailsJsonObject.put("Title", productDetails.getTitle());
 
                 if (productDetails.getDescription() != null) {
-                    productDetailsJsonObject.put("description", productDetails.getDescription());
+                    productDetailsJsonObject.put("Description", productDetails.getDescription());
                 }
 
                 // One-time purchase
                 if (productDetails.getOneTimePurchaseOfferDetails() != null) {
                     JSONObject oneTimeOfferJson = getJsonObject(productDetails);
 
-                    productDetailsJsonObject.put("oneTimePurchaseOfferDetails", oneTimeOfferJson);
+                    productDetailsJsonObject.put("OneTimePurchaseOfferDetails", oneTimeOfferJson);
                 }
 
                 // Subscription offers
                 if (productDetails.getSubscriptionOfferDetails() != null) {
                     JSONArray subscriptionOffersArray = getJsonArray(productDetails);
-                    productDetailsJsonObject.put("subscriptionOfferDetails",
+                    productDetailsJsonObject.put("SubscriptionOfferDetails",
                             subscriptionOffersArray);
                 }
 
                 productDetailsJsonArray.put(productDetailsJsonObject);
             }
-            jsonObject.put("details", productDetailsJsonArray);
+            jsonObject.put("Details", productDetailsJsonArray);
         } catch (JSONException exception) {
-            Log.e(TAG, "skuDetailsResultToJson: ", exception);
+            Log.e(TAG, "productDetailsResultToJson: ", exception);
             return new JSONObject().toString();
         }
         return jsonObject.toString();
@@ -403,16 +401,16 @@ public class AptoideBillingSDKUnityBridge {
                 JSONArray pricingPhasesArray = getJsonArray(offerDetail);
 
                 JSONObject pricingPhasesJson = new JSONObject();
-                pricingPhasesJson.put("pricingPhaseList", pricingPhasesArray);
-                offerDetailJson.put("pricingPhases", pricingPhasesJson);
+                pricingPhasesJson.put("PricingPhaseList", pricingPhasesArray);
+                offerDetailJson.put("PricingPhases", pricingPhasesJson);
 
                 // Trial details
                 if (offerDetail.getTrialDetails() != null) {
                     JSONObject trialJson = new JSONObject();
-                    trialJson.put("period", offerDetail.getTrialDetails().getPeriod());
-                    trialJson.put("periodEndDate",
+                    trialJson.put("Period", offerDetail.getTrialDetails().getPeriod());
+                    trialJson.put("PeriodEndDate",
                             offerDetail.getTrialDetails().getPeriodEndDate());
-                    offerDetailJson.put("trialDetails", trialJson);
+                    offerDetailJson.put("TrialDetails", trialJson);
                 }
                 subscriptionOffersArray.put(offerDetailJson);
             }
@@ -428,21 +426,21 @@ public class AptoideBillingSDKUnityBridge {
                 offerDetail.getPricingPhases()
                         .getPricingPhaseList()) {
             JSONObject phaseJson = new JSONObject();
-            phaseJson.put("billingPeriod", pricingPhase.getBillingPeriod());
-            phaseJson.put("formattedPrice", pricingPhase.getFormattedPrice());
-            phaseJson.put("priceAmountMicros", pricingPhase.getPriceAmountMicros());
-            phaseJson.put("priceCurrencyCode", pricingPhase.getPriceCurrencyCode());
-            phaseJson.put("appcFormattedPrice",
+            phaseJson.put("BillingPeriod", pricingPhase.getBillingPeriod());
+            phaseJson.put("FormattedPrice", pricingPhase.getFormattedPrice());
+            phaseJson.put("PriceAmountMicros", pricingPhase.getPriceAmountMicros());
+            phaseJson.put("PriceCurrencyCode", pricingPhase.getPriceCurrencyCode());
+            phaseJson.put("AppcFormattedPrice",
                     pricingPhase.getAppcFormattedPrice());
-            phaseJson.put("appcPriceAmountMicros",
+            phaseJson.put("AppcPriceAmountMicros",
                     pricingPhase.getAppcPriceAmountMicros());
-            phaseJson.put("appcPriceCurrencyCode",
+            phaseJson.put("AppcPriceCurrencyCode",
                     pricingPhase.getAppcPriceCurrencyCode());
-            phaseJson.put("fiatFormattedPrice",
+            phaseJson.put("FiatFormattedPrice",
                     pricingPhase.getFiatFormattedPrice());
-            phaseJson.put("fiatPriceAmountMicros",
+            phaseJson.put("FiatPriceAmountMicros",
                     pricingPhase.getFiatPriceAmountMicros());
-            phaseJson.put("fiatPriceCurrencyCode",
+            phaseJson.put("FiatPriceCurrencyCode",
                     pricingPhase.getFiatPriceCurrencyCode());
             pricingPhasesArray.put(phaseJson);
         }
@@ -454,15 +452,15 @@ public class AptoideBillingSDKUnityBridge {
         ProductDetails.OneTimePurchaseOfferDetails offer =
                 productDetails.getOneTimePurchaseOfferDetails();
         JSONObject oneTimeOfferJson = new JSONObject();
-        oneTimeOfferJson.put("formattedPrice", offer.getFormattedPrice());
-        oneTimeOfferJson.put("priceAmountMicros", offer.getPriceAmountMicros());
-        oneTimeOfferJson.put("priceCurrencyCode", offer.getPriceCurrencyCode());
-        oneTimeOfferJson.put("appcFormattedPrice", offer.getAppcFormattedPrice());
-        oneTimeOfferJson.put("appcPriceAmountMicros", offer.getAppcPriceAmountMicros());
-        oneTimeOfferJson.put("appcPriceCurrencyCode", offer.getAppcPriceCurrencyCode());
-        oneTimeOfferJson.put("fiatFormattedPrice", offer.getFiatFormattedPrice());
-        oneTimeOfferJson.put("fiatPriceAmountMicros", offer.getFiatPriceAmountMicros());
-        oneTimeOfferJson.put("fiatPriceCurrencyCode", offer.getFiatPriceCurrencyCode());
+        oneTimeOfferJson.put("FormattedPrice", offer.getFormattedPrice());
+        oneTimeOfferJson.put("PriceAmountMicros", offer.getPriceAmountMicros());
+        oneTimeOfferJson.put("PriceCurrencyCode", offer.getPriceCurrencyCode());
+        oneTimeOfferJson.put("AppcFormattedPrice", offer.getAppcFormattedPrice());
+        oneTimeOfferJson.put("AppcPriceAmountMicros", offer.getAppcPriceAmountMicros());
+        oneTimeOfferJson.put("AppcPriceCurrencyCode", offer.getAppcPriceCurrencyCode());
+        oneTimeOfferJson.put("FiatFormattedPrice", offer.getFiatFormattedPrice());
+        oneTimeOfferJson.put("FiatPriceAmountMicros", offer.getFiatPriceAmountMicros());
+        oneTimeOfferJson.put("FiatPriceCurrencyCode", offer.getFiatPriceCurrencyCode());
         return oneTimeOfferJson;
     }
 
