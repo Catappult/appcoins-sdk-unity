@@ -241,8 +241,8 @@ public class AptoideBillingSDKManager : MonoBehaviour
         Debug.Log($"AptoideBillingSDKManager | Product Details Received: {productDetailsResultJson}");
 
         ProductDetailsResult productDetailsResult = JsonUtility.FromJson<ProductDetailsResult>(productDetailsResultJson);
-        Debug.Log($"AptoideBillingSDKManager | Product Details Received 1: {productDetailsResult.billingResult}");
-        Debug.Log($"AptoideBillingSDKManager | Product Details Received 2: {productDetailsResult.details}");
+        Debug.Log($"AptoideBillingSDKManager | Product Details Received 1: {productDetailsResult.billingResult.responseCode} {productDetailsResult.billingResult.debugMessage}");
+        Debug.Log($"AptoideBillingSDKManager | Product Details Received 2: {productDetailsResult.details[0]}");
 
         productDetailsResponseListener.OnProductDetailsResponse(productDetailsResult.billingResult, productDetailsResult.details);
     }
