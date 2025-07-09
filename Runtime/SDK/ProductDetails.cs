@@ -8,8 +8,8 @@ public class ProductDetails
     public string ProductType;
     public string Title;
     public string Description;
-    public OneTimePurchaseOfferDetails OneTimeOfferDetails;
-    public List<SubscriptionOfferDetails> SubscriptionOfferDetailsList;
+    public OneTimePurchaseOfferDetails OneTimePurchaseOfferDetails;
+    public List<SubscriptionOfferDetails> SubscriptionOfferDetails;
 
     [System.Serializable]
     public class OneTimePurchaseOfferDetails
