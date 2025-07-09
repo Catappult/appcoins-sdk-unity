@@ -1,5 +1,5 @@
+[System.Serializable]
 using System;
-using System.Serializable;
 
 public class BillingResult
 {
