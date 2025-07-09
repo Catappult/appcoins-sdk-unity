@@ -1,6 +1,6 @@
 [System.Serializable]
 public class PurchasesResponseResult
 {
-    public BillingResult billingResult; // BillingResult of Purchases Response
-    public Purchase[] purchases; // Array of purchases (if any)
+    public BillingResult BillingResult; // BillingResult of Purchases Response
+    public Purchase[] Purchases; // Array of purchases (if any)
 }
