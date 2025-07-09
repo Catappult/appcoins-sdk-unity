@@ -67,7 +67,7 @@ public class AptoideBillingSDKUnityBridge {
 
     private static ProductDetailsResponseListener productDetailsResponseListener =
             (billingResult, details) -> {
-                Log.d(TAG, "SKU details received: " + billingResult.getResponseCode()
+                Log.d(TAG, "Product details received: " + billingResult.getResponseCode()
                         + " debugMessage: " + billingResult.getDebugMessage());
                 if (!details.isEmpty()) {
                     for (ProductDetails productDetail : details) {
@@ -288,7 +288,7 @@ public class AptoideBillingSDKUnityBridge {
             }
             jsonObject.put("Purchases", purchasesJsonArray);
         } catch (JSONException exception) {
-            Log.e(TAG, "purchasesResultToJson: ", exception);
+            Log.e(TAG, "purchasesResponseResultToJson: ", exception);
             return new JSONObject().toString();
         }
         return jsonObject.toString();
