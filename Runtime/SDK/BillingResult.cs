@@ -6,6 +6,12 @@ public class BillingResult
     public int? ResponseCode;
     public string DebugMessage;
 
+    internal BillingResult(int? responseCode = null, string debugMessage = "")
+    {
+        ResponseCode = responseCode;
+        DebugMessage = debugMessage;
+    }
+
     public override string ToString()
     {
         return $"ResponseCode: {ResponseCode}, DebugMessage: {DebugMessage}";
