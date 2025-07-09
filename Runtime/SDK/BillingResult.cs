@@ -6,7 +6,7 @@ public class BillingResult
     public int? ResponseCode { get; }
     public string DebugMessage { get; }
 
-    internal BillingResult(int? responseCode = null, string debugMessage = "")
+    BillingResult(int? responseCode = null, string debugMessage = "")
     {
         ResponseCode = responseCode;
         DebugMessage = debugMessage;
